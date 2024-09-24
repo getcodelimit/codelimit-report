@@ -1,91 +1,31 @@
-import {
-    Container,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableFooter,
-    TableHead,
-    TablePagination,
-    TableRow,
-    TableSortLabel
-} from "@mui/material";
-// import {example_report} from './assets/example-report.ts';
-import linux_fs_report from './assets/linux-fs-report.json';
-import {getMeasurements, MeasurementField, OrderDirection, sortMeasurements} from "./utils.ts";
+import {Tab, Tabs} from "@mui/material";
 import {useEffect, useState} from "react";
-import {Measurement} from "./entities/Measurement.ts";
-import {Report} from "./entities/Report.ts";
+import {Link, Outlet, useLocation} from "react-router-dom";
+import {Main} from "./App.style.ts";
 
 
-function App() {
-    const [measurements, setMeasurements] = useState<Measurement[]>([]);
-    const [orderBy, setOrderBy] = useState<MeasurementField>('value');
-    const [orderDirection, setOrderDirection] = useState<OrderDirection>('desc');
-    const [page, setPage] = useState(0);
-    const rowsPerPage = 10;
+export default function App() {
+    const [currentTab, setCurrentTabe] = useState(0);
+    const location = useLocation();
 
     useEffect(() => {
-        setMeasurements(sortMeasurements(getMeasurements(linux_fs_report as Report), 'value', 'desc'));
-    }, []);
-
-    const renderRows = (values: Measurement[]) => {
-        const rows = [];
-        for (const [i, m] of values.entries()) {
-            rows.push(
-                <TableRow key={i}>
-                    <TableCell>{m.unit_name}</TableCell>
-                    <TableCell align="right">{m.value}</TableCell>
-                </TableRow>
-            )
+        if (location.pathname === '/measurements') {
+            setCurrentTabe(1);
+        } else if (location.pathname === '/tree') {
+            setCurrentTabe(2);
+        } else {
+            setCurrentTabe(0);
         }
-        return rows;
-    }
-
-    const sortRows = (field: MeasurementField) => {
-        let direction = orderDirection;
-        if (field === orderBy) {
-            direction = orderDirection === 'asc' ? 'desc' : 'asc';
-        }
-        setOrderDirection(direction);
-        setOrderBy(field);
-        setMeasurements(sortMeasurements(measurements, field, direction));
-        setPage(0);
-    }
-
-    const handlePageChange = (_: unknown, newPage: number) => {
-        setPage(newPage);
-    }
+    }, [location]);
 
     return (
-        <Container>
-            <TableContainer>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>
-                                <TableSortLabel active={orderBy === 'unit_name'} direction={orderDirection}
-                                                onClick={() => sortRows('unit_name')}>Function</TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right">
-                                <TableSortLabel active={orderBy === 'value'} direction={orderDirection}
-                                                onClick={() => sortRows('value')}>Length</TableSortLabel>
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {renderRows(measurements.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))}
-                    </TableBody>
-                    <TableFooter>
-                        <TableRow>
-                            <TablePagination count={measurements.length} onPageChange={handlePageChange} page={page}
-                                             rowsPerPage={rowsPerPage}/>
-                        </TableRow>
-                    </TableFooter>
-                </Table>
-            </TableContainer>
-        </Container>
+        <Main>
+            <Tabs value={currentTab}>
+                <Tab label="Overview" to="/" component={Link} disabled={currentTab === 0}/>
+                <Tab label="Measurements" to="/measurements" component={Link} disabled={currentTab === 1}/>
+                <Tab label="File tree" to="/tree" component={Link} disabled={currentTab === 2}/>
+            </Tabs>
+            <Outlet/>
+        </Main>
     )
 }
-
-export default App
