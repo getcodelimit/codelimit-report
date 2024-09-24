@@ -12,3 +12,17 @@ export function getMeasurements(report: Report) {
     }
     return result;
 }
+
+export type MeasurementField = 'unit_name' | 'value';
+
+export type OrderDirection = 'asc' | 'desc';
+
+export function sortMeasurements(measurements: Measurement[], orderBy: MeasurementField, orderDirection: OrderDirection) {
+    return measurements.sort((a, b) => {
+        if (orderDirection === 'asc') {
+            return a[orderBy] < b[orderBy] ? -1 : 1;
+        } else {
+            return a[orderBy] < b[orderBy] ? 1 : -1;
+        }
+    });
+}
